@@ -1,0 +1,67 @@
+# Import Librariesimport pandas as pd
+
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.cluster import KMeans
+from sklearn import preprocessing
+
+%matplotlib inline
+
+# Reading and Understanding Data
+raw_data = pd.read_csv("Data untuk use case.csv")
+raw_data.head()
+data = raw_data.set_index(['CustomerID'])
+
+#Data maping to change Gender become integer
+
+mapping = {"Gender": {"Male":0, "Female": 1}}
+data.replace(mapping, inplace= True)
+
+data.head()
+
+#Data Screening
+data.describe()
+data.nunique()
+data.isnull().sum()
+
+#Pair plotting data
+sns.pairplot(data)
+
+# Build Elbow Method graph for identifying number of cluster
+## Building The Elbow Method graph with full data
+wcss = []
+for i in range (2,10):
+    kmeans = KMeans (i)
+    kmeans.fit(data)
+    wcss.append(kmeans.inertia_)
+plt.plot(range (2,10), wcss)
+plt.title("ELBOW METHOD")
+plt.xlabel("Clusters")
+plt.ylabel("WCSS")
+
+# Silhouette Score for Identifying Number of Cluster
+from sklearn.metrics import silhouette_score
+from sklearn.cluster import KMeans
+
+sil =[]
+# Number of Cluster in range 2-20
+K= range (2,10)
+for n in K:
+    algorithm = (KMeans(n_clusters = n))
+    algorithm.fit(data)
+    labels = algorithm.labels_
+    sil.append(silhouette_score(data, labels, metric= 'euclidean'))
+    sil
+
+kmeans = KMeans (5)
+kmeans.fit (data)
+clusters = data.copy()
+clusters['prediction'] = kmeans.fit_predict(clusters)
+
+plt.scatter(data['Purchasing power (1-100)'], data ['Telco Spending (IDR 000)'], c= clusters ['prediction'], cmap='rainbow')
+plt.ylabel('Telco Spending (IDR 000)')
+plt.xlabel('Purchasing power (1-100)')
+
+clusters.groupby('prediction').mean()
+clusters.head()
